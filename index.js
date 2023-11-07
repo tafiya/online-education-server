@@ -1,15 +1,21 @@
 const express = require('express')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+//const cookieParser=require('cookie-parser');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const cors= require('cors');
 require('dotenv').config()
-const port =process.env.PORT || 5000
+const jwt = require('jsonwebtoken');
+const port =process.env.PORT || 5000;
 //middleware
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5173'],
+    credentials:true,
+  }));
 app.use(express.json());
+//app.use(cookieParser());
 
 
-console.log(process.env.DB_PASS)
+
  
 
 
@@ -23,6 +29,32 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+//personal middlewares
+// const logger= async(req,res,next)=>{
+//     console.log('called booking:',req.method, req.url);
+//     next();
+//   }
+  
+//   const verifyToken =async(req,res,next)=>{
+//     const token=req.cookies?.NewToken;
+//     console.log('value of token in middleware',token)
+//     if(!token){
+//       return res.status(401).send({message:'not authorized'})
+//     }
+//     jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
+//       if(err)
+//       {
+//         console.log(err)
+//         return res.status(401).send({message:'unauthorized'})
+//       }
+//       console.log('value in the token',decoded)
+//       req.user =decoded;
+//       next();
+//     })
+    
+  
+//   }
+  
 
 async function run() {
   try {
@@ -39,13 +71,70 @@ async function run() {
 run().catch(console.dir);
 
 const assignmentCollections = client.db("assignmentDB").collection("assignments");
+//----------------auth related Api
+app.post('/jwt',async(req,res)=>{
+    const user =req.body;
+    console.log('use for token',user);
+    const token= jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn:'1h'})
+  
+  
+    res.cookie('NewToken',token,{
+      httpOnly:true ,
+      secure :true,
+      sameSite: 'none'
+    })
+   .send({success:true});
+  })
+  app.post('/logout',async(req,res)=>{
+    const user =req.body;
+    console.log('logging out',user);
+    res.clearCookie('NewToken',{maxAge:0}).send({success:true});
+  })
 
+app.get('/assignments',async(req,res)=>{
+    const cursor =assignmentCollections.find();
+    const result =await cursor.toArray();
+    res.send(result);
+})
+app.get('/assignments/:id',async(req,res)=>{
+    const id=req.params.id;
+    const query ={_id: new ObjectId(id)}
+    const result =await assignmentCollections.findOne(query);
+    res.send(result);
+})
 app.post('/createAssignment',async(req,res)=>{
     const  newAssignments= req.body;
 
     const result= await assignmentCollections.insertOne(newAssignments);
     res.send(result);
 })
+//Update
+// app.put('/assignments/:id', async(req,res)=>{
+//     const id =req.params.id;
+//     console.log(id);
+//     const filter={_id: new ObjectId(id)};
+//     const options = { upsert: true };
+//     const updatedProduct=req.body;
+//     const newUpdatedProduct={
+//         $set: {
+//             title:updatedProduct.title ,
+//             level:updatedProduct. level ,
+//             marks:updatedProduct.marks, 
+//             description:updatedProduct.description ,
+//             date:updatedProduct.date,
+//             creatorEmail:updatedProduct.creatorEmail, 
+//             photo:updatedProduct.photo
+//           },
+//     }
+//     const result= await assignmentCollections.updateOne(filter,newUpdatedProduct,options);
+//     res.send(result);
+// })
+// app.delete('/deleteAssignment/:id',async(req,res)=>{
+//     const id=req.params.id;
+//     const query ={_id: new ObjectId(id)}
+//     const result=await assignmentCollections.deleteOne(query);
+//     res.send(result)
+// })
 
 
 
