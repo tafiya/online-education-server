@@ -129,12 +129,12 @@ app.put('/assignments/:id', async(req,res)=>{
     const result= await assignmentCollections.updateOne(filter,newUpdatedProduct,options);
     res.send(result);
 })
-// app.delete('/deleteAssignment/:id',async(req,res)=>{
-//     const id=req.params.id;
-//     const query ={_id: new ObjectId(id)}
-//     const result=await assignmentCollections.deleteOne(query);
-//     res.send(result)
-// })
+app.delete('/deleteAssignment/:id',async(req,res)=>{
+    const id=req.params.id;
+    const query ={_id: new ObjectId(id)}
+    const result=await assignmentCollections.deleteOne(query);
+    res.send(result)
+})
 
 
 
