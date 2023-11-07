@@ -109,26 +109,26 @@ app.post('/createAssignment',async(req,res)=>{
     res.send(result);
 })
 //Update
-// app.put('/assignments/:id', async(req,res)=>{
-//     const id =req.params.id;
-//     console.log(id);
-//     const filter={_id: new ObjectId(id)};
-//     const options = { upsert: true };
-//     const updatedProduct=req.body;
-//     const newUpdatedProduct={
-//         $set: {
-//             title:updatedProduct.title ,
-//             level:updatedProduct. level ,
-//             marks:updatedProduct.marks, 
-//             description:updatedProduct.description ,
-//             date:updatedProduct.date,
-//             creatorEmail:updatedProduct.creatorEmail, 
-//             photo:updatedProduct.photo
-//           },
-//     }
-//     const result= await assignmentCollections.updateOne(filter,newUpdatedProduct,options);
-//     res.send(result);
-// })
+app.put('/assignments/:id', async(req,res)=>{
+    const id =req.params.id;
+    console.log(id);
+    const filter={_id: new ObjectId(id)};
+    const options = { upsert: true };
+    const updatedProduct=req.body;
+    const newUpdatedProduct={
+        $set: {
+            title:updatedProduct.title ,
+            level:updatedProduct. level ,
+            marks:updatedProduct.marks, 
+            description:updatedProduct.description ,
+            date:updatedProduct.date,
+            creatorEmail:updatedProduct.creatorEmail, 
+            photo:updatedProduct.photo
+          },
+    }
+    const result= await assignmentCollections.updateOne(filter,newUpdatedProduct,options);
+    res.send(result);
+})
 // app.delete('/deleteAssignment/:id',async(req,res)=>{
 //     const id=req.params.id;
 //     const query ={_id: new ObjectId(id)}
