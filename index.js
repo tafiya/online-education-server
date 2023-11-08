@@ -71,6 +71,7 @@ async function run() {
 run().catch(console.dir);
 
 const assignmentCollections = client.db("assignmentDB").collection("assignments");
+const submitAssignments = client.db("assignmentDB").collection("submitAssignments");
 //----------------auth related Api
 app.post('/jwt',async(req,res)=>{
     const user =req.body;
@@ -107,6 +108,12 @@ app.post('/createAssignment',async(req,res)=>{
 
     const result= await assignmentCollections.insertOne(newAssignments);
     res.send(result);
+})
+//submit Assignment
+app.post('/submitAssignment',async(req,res)=>{
+  const  newSubmit= req.body;
+  const result= await submitAssignments.insertOne(newSubmit);
+  res.send(result);
 })
 //Update
 app.put('/assignments/:id', async(req,res)=>{
