@@ -174,6 +174,8 @@ app.put('/assignments/:id', async(req,res)=>{
     const result= await assignmentCollections.updateOne(filter,newUpdatedProduct,options);
     res.send(result);
 })
+
+
 app.delete('/assignments/:id',async(req,res)=>{
     const id=req.params.id;
     const query ={_id: new ObjectId(id)}
