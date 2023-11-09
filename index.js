@@ -8,7 +8,11 @@ const jwt = require('jsonwebtoken');
 const port =process.env.PORT || 5000;
 //middleware
 app.use(cors({
-    origin: ['http://localhost:5173'],
+    origin: [
+      //'http://localhost:5173'
+      "https://online-group-study-assignment.web.app",
+      "https://online-group-study-assignment.firebaseapp.com"
+    ],
     credentials:true,
   }));
 app.use(express.json());
@@ -103,24 +107,11 @@ app.get('/assignments/:id',async(req,res)=>{
     const result =await assignmentCollections.findOne(query);
     res.send(result);
 })
-// app.get('/submitAssignment',logger,verifyToken,async(req,res)=>{
-//   let query={};
-//   if(req.query?.status=='pending')
-//   {
-//       query={status:req.query.status}
-//   }
-//   const cursor =submitAssignments.find(query);
-//   const result =await cursor.toArray();
-//   res.send(result);
-// })
+
 app.get('/submitAssignment',logger,verifyToken,async(req,res)=>{
   //console.log(req.query.email);
    console.log('User of token', req.user)
-  //  console.log('user in from valid token',req.user)
-  //  if(req.user.email !== req.query.email )
-  //  {
-  //   return res.status(403).send({message:'forbidden access'})
-  //  }
+
       let query={};
     if(req.query?.email)
     {
@@ -183,7 +174,7 @@ app.put('/assignments/:id', async(req,res)=>{
     const result= await assignmentCollections.updateOne(filter,newUpdatedProduct,options);
     res.send(result);
 })
-app.delete('/deleteAssignment/:id',async(req,res)=>{
+app.delete('/assignments/:id',async(req,res)=>{
     const id=req.params.id;
     const query ={_id: new ObjectId(id)}
     const result=await assignmentCollections.deleteOne(query);
