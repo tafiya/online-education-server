@@ -30,30 +30,30 @@ const client = new MongoClient(uri, {
   }
 });
 //personal middlewares
-// const logger= async(req,res,next)=>{
-//     console.log('called booking:',req.method, req.url);
-//     next();
-//   }
+const logger= async(req,res,next)=>{
+    console.log('called booking:',req.method, req.url);
+    next();
+  }
   
-//   const verifyToken =async(req,res,next)=>{
-//     const token=req.cookies?.NewToken;
-//     console.log('value of token in middleware',token)
-//     if(!token){
-//       return res.status(401).send({message:'not authorized'})
-//     }
-//     jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
-//       if(err)
-//       {
-//         console.log(err)
-//         return res.status(401).send({message:'unauthorized'})
-//       }
-//       console.log('value in the token',decoded)
-//       req.user =decoded;
-//       next();
-//     })
+  const verifyToken =async(req,res,next)=>{
+    const token=req.cookies?.NewToken;
+    console.log('value of token in middleware',token)
+    if(!token){
+      return res.status(401).send({message:'not authorized'})
+    }
+    jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
+      if(err)
+      {
+        console.log(err)
+        return res.status(401).send({message:'unauthorized'})
+      }
+      console.log('value in the token',decoded)
+      req.user =decoded;
+      next();
+    })
     
   
-//   }
+  }
   
 
 async function run() {
@@ -73,7 +73,7 @@ run().catch(console.dir);
 const assignmentCollections = client.db("assignmentDB").collection("assignments");
 const submitAssignments = client.db("assignmentDB").collection("submitAssignments");
 //----------------auth related Api
-app.post('/jwt',async(req,res)=>{
+app.post('/jwt',logger,async(req,res)=>{
     const user =req.body;
     console.log('use for token',user);
     const token= jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn:'1h'})
@@ -91,7 +91,7 @@ app.post('/jwt',async(req,res)=>{
     console.log('logging out',user);
     res.clearCookie('NewToken',{maxAge:0}).send({success:true});
   })
-
+//assignment related api
 app.get('/assignments',async(req,res)=>{
     const cursor =assignmentCollections.find();
     const result =await cursor.toArray();
@@ -109,10 +109,38 @@ app.post('/createAssignment',async(req,res)=>{
     const result= await assignmentCollections.insertOne(newAssignments);
     res.send(result);
 })
+// app.get('/bookings',logger,verifyToken,async(req,res)=>{
+//   //console.log(req.query.email);
+//    console.log('User of token', req.user)
+//   //  console.log('user in from valid token',req.user)
+//    if(req.user.email !== req.query.email )
+//    {
+//     return res.status(403).send({message:'forbidden access'})
+//    }
+//       let query={};
+//     if(req.query?.email)
+//     {
+//         query={email:req.query.email}
+//     }
+//     const result= await submitAssignments.find(query).toArray();
+//     res.send(result);
+
+// })
 //submit Assignment
 app.post('/submitAssignment',async(req,res)=>{
   const  newSubmit= req.body;
   const result= await submitAssignments.insertOne(newSubmit);
+  res.send(result);
+  console.log(result);
+})
+app.get('/submitAssignment',async(req,res)=>{
+  let query={};
+  if(req.query?.status=='pending')
+  {
+      query={status:req.query.status}
+  }
+  const cursor =submitAssignments.find(query);
+  const result =await cursor.toArray();
   res.send(result);
 })
 //Update
