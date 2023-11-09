@@ -1,5 +1,5 @@
 const express = require('express')
-//const cookieParser=require('cookie-parser');
+const cookieParser=require('cookie-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const cors= require('cors');
@@ -12,7 +12,7 @@ app.use(cors({
     credentials:true,
   }));
 app.use(express.json());
-//app.use(cookieParser());
+app.use(cookieParser());
 
 
 
@@ -103,29 +103,44 @@ app.get('/assignments/:id',async(req,res)=>{
     const result =await assignmentCollections.findOne(query);
     res.send(result);
 })
+// app.get('/submitAssignment',logger,verifyToken,async(req,res)=>{
+//   let query={};
+//   if(req.query?.status=='pending')
+//   {
+//       query={status:req.query.status}
+//   }
+//   const cursor =submitAssignments.find(query);
+//   const result =await cursor.toArray();
+//   res.send(result);
+// })
+app.get('/submitAssignment',logger,verifyToken,async(req,res)=>{
+  //console.log(req.query.email);
+   console.log('User of token', req.user)
+  //  console.log('user in from valid token',req.user)
+  //  if(req.user.email !== req.query.email )
+  //  {
+  //   return res.status(403).send({message:'forbidden access'})
+  //  }
+      let query={};
+    if(req.query?.email)
+    {
+      if(req.user.email !== req.query.email )
+      {
+       return res.status(403).send({message:'forbidden access'})
+      }
+        query={email:req.query.email}
+    }
+    const result= await submitAssignments.find(query).toArray();
+    res.send(result);
+
+})
 app.post('/createAssignment',async(req,res)=>{
     const  newAssignments= req.body;
 
     const result= await assignmentCollections.insertOne(newAssignments);
     res.send(result);
 })
-// app.get('/bookings',logger,verifyToken,async(req,res)=>{
-//   //console.log(req.query.email);
-//    console.log('User of token', req.user)
-//   //  console.log('user in from valid token',req.user)
-//    if(req.user.email !== req.query.email )
-//    {
-//     return res.status(403).send({message:'forbidden access'})
-//    }
-//       let query={};
-//     if(req.query?.email)
-//     {
-//         query={email:req.query.email}
-//     }
-//     const result= await submitAssignments.find(query).toArray();
-//     res.send(result);
 
-// })
 //submit Assignment
 app.post('/submitAssignment',async(req,res)=>{
   const  newSubmit= req.body;
@@ -133,16 +148,20 @@ app.post('/submitAssignment',async(req,res)=>{
   res.send(result);
   console.log(result);
 })
-app.get('/submitAssignment',async(req,res)=>{
-  let query={};
-  if(req.query?.status=='pending')
-  {
-      query={status:req.query.status}
-  }
-  const cursor =submitAssignments.find(query);
-  const result =await cursor.toArray();
+app.patch('/submitAssignment/:id',async(req,res)=>{
+  const id =req.params.id;
+  const filter ={ _id: new ObjectId(id)};
+  const updatedBooking =req.body;
+  console.log(updatedBooking);
+  const updateDoc ={
+      $set:{
+          status:updatedBooking.status
+      },
+  };
+  const result =await submitAssignments.updateOne(filter,updateDoc);
   res.send(result);
-})
+});
+
 //Update
 app.put('/assignments/:id', async(req,res)=>{
     const id =req.params.id;
