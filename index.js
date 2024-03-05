@@ -9,9 +9,10 @@ const port =process.env.PORT || 5000;
 //middleware
 app.use(cors({
     origin: [
-      //'http://localhost:5173'
-      "https://online-group-study-assignment.web.app",
-      "https://online-group-study-assignment.firebaseapp.com"
+      // 'http://localhost:5176'
+
+      "https://65e78999df3aec6b6a93e12d--heroic-selkie-4e7024.netlify.app"
+      //"https://online-group-study-assignment.firebaseapp.com"
     ],
     credentials:true,
   }));
@@ -35,23 +36,23 @@ const client = new MongoClient(uri, {
 });
 //personal middlewares
 const logger= async(req,res,next)=>{
-    console.log('called booking:',req.method, req.url);
+  
     next();
   }
   
   const verifyToken =async(req,res,next)=>{
     const token=req.cookies?.NewToken;
-    console.log('value of token in middleware',token)
+
     if(!token){
       return res.status(401).send({message:'not authorized'})
     }
     jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
       if(err)
       {
-        console.log(err)
+    
         return res.status(401).send({message:'unauthorized'})
       }
-      console.log('value in the token',decoded)
+
       req.user =decoded;
       next();
     })
@@ -63,7 +64,7 @@ const logger= async(req,res,next)=>{
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+   
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -79,7 +80,7 @@ const submitAssignments = client.db("assignmentDB").collection("submitAssignment
 //----------------auth related Api
 app.post('/jwt',logger,async(req,res)=>{
     const user =req.body;
-    console.log('use for token',user);
+
     const token= jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn:'1h'})
   
   
@@ -92,7 +93,6 @@ app.post('/jwt',logger,async(req,res)=>{
   })
   app.post('/logout',async(req,res)=>{
     const user =req.body;
-    console.log('logging out',user);
     res.clearCookie('NewToken',{maxAge:0}).send({success:true});
   })
 //assignment related api
@@ -110,8 +110,6 @@ app.get('/assignments/:id',async(req,res)=>{
 
 app.get('/submitAssignment',logger,verifyToken,async(req,res)=>{
   //console.log(req.query.email);
-   console.log('User of token', req.user)
-
       let query={};
     if(req.query?.email)
     {
@@ -137,7 +135,6 @@ app.post('/submitAssignment',async(req,res)=>{
   const  newSubmit= req.body;
   const result= await submitAssignments.insertOne(newSubmit);
   res.send(result);
-  console.log(result);
 })
 app.patch('/submitAssignment/:id',async(req,res)=>{
   const id =req.params.id;
